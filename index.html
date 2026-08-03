@@ -113,6 +113,14 @@ canvas{max-height:280px;}
 .section-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate-500);margin:0 0 10px;font-weight:700;}
 .dashboard-body{display:none;}
 .dashboard-body.show{display:block;}
+
+/* tramos table */
+.tramo-status{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.tramo-status.cumple{background:var(--green-100);color:var(--green-500);}
+.tramo-status.no-cumple{background:var(--red-100);color:var(--red-500);}
+tr.tramo-total td{background:var(--slate-100);font-weight:700;}
+tr.tramo-total td.num{color:var(--navy-900);}
+
 @media(max-width:1000px){
   .info-grid{grid-template-columns:repeat(2,1fr);}
   .kpi-grid{grid-template-columns:repeat(2,1fr);}
@@ -173,6 +181,25 @@ canvas{max-height:280px;}
             </tr>
           </thead>
           <tbody id="allTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="tramosPanel" style="display:none;">
+      <div class="panel-head"><h2 id="tramosPanelTitle">Análisis por Tramos — Zona Milagro</h2></div>
+      <div class="panel-body" style="overflow-x:auto;">
+        <table id="tramosTable">
+          <thead>
+            <tr>
+              <th>Tramo</th>
+              <th class="num">% Contiene</th>
+              <th class="num">% Libera</th>
+              <th class="num">% Total</th>
+              <th class="num">Meta Tramo</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tramosTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -327,6 +354,10 @@ const TABLES = {
   }
 };
 
+// ---- tramos oficiales y sus metas (fijas) — la data real (% contiene/libera) se calcula desde el archivo cargado ----
+const TRAMO_CODES = ['AA','A','B','C','D','E','E1'];
+const TRAMO_META = { AA:0.9300, A:0.7000, B:0.5000, C:0.4000, D:0.3000, E:0.2000, E1:0.1200 };
+
 let DATA = [];
 let periodoLabel = '';
 
@@ -429,6 +460,7 @@ function handleFile(file){
 
       let currentNombre = null;
       let currentPerfil = null;
+      let currentTramos = [];
       const parsed = [];
 
       for(let r=1; r<rows.length; r++){
@@ -446,6 +478,27 @@ function handleFile(file){
 
         const calif = row[idx.calificacion];
         const califStr = calif === null ? '' : String(calif).trim().toLowerCase();
+        const califUpper = calif === null ? '' : String(calif).trim().toUpperCase();
+
+        // filas de tramo (AA, A, B, C, D, E, E1): guardan el detalle por cobrador
+        if(TRAMO_CODES.includes(califUpper) && currentNombre){
+          const tInicial = num(row[idx.inicial]);
+          const tContiene = num(row[idx.contiene]);
+          const tLibera = num(row[idx.libera]);
+          let tPctContiene = idx.pctContiene>=0 ? num(row[idx.pctContiene]) : (tInicial>0 ? tContiene/tInicial : 0);
+          let tPctLibera = idx.pctLibera>=0 ? num(row[idx.pctLibera]) : (tInicial>0 ? tLibera/tInicial : 0);
+          if(tPctContiene > 1) tPctContiene = tPctContiene/100;
+          if(tPctLibera > 1) tPctLibera = tPctLibera/100;
+          currentTramos.push({
+            tramo: califUpper,
+            inicial: tInicial,
+            contiene: tContiene,
+            libera: tLibera,
+            pctContieneRaw: tPctContiene,
+            pctLiberaRaw: tPctLibera
+          });
+        }
+
         if(califStr === 'total'){
           if(!currentNombre) continue;
           const inicial = num(row[idx.inicial]);
@@ -465,10 +518,12 @@ function handleFile(file){
             nombre: currentNombre,
             perfil,
             inicial, deteriora, contiene, libera,
-            pctContieneRaw, pctLiberaRaw
+            pctContieneRaw, pctLiberaRaw,
+            tramos: currentTramos
           });
           currentNombre = null;
           currentPerfil = null;
+          currentTramos = [];
         }
       }
 
@@ -523,6 +578,10 @@ function getLevel(pct, table){
 function render(){
   if(!DATA.length) return;
   const nombre = selectEl.value;
+
+  // El panel de Tramos se muestra siempre, sea cual sea el filtro
+  document.getElementById('tramosPanel').style.display = 'block';
+  renderTramosTable(nombre);
 
   if(nombre === '__ALL__'){
     document.getElementById('allPanel').style.display = 'block';
@@ -652,6 +711,102 @@ function renderAllTable(){
       <td class="num">${faltaTotalMonto>0 ? fmtMoney(faltaTotalMonto) : '✓ Máximo'}</td>`;
     body.appendChild(tr);
   });
+}
+
+// ---------- TABLA DE RESULTADOS POR TRAMO (calculada desde el archivo, por cobrador o agregada) ----------
+function renderTramosTable(nombreFiltro){
+  const body = document.getElementById('tramosTableBody');
+  const titleEl = document.getElementById('tramosPanelTitle');
+  body.innerHTML = '';
+
+  // conjunto de cobradores a considerar: uno solo, o todos (agregado zona)
+  const cobradoresIncluidos = (nombreFiltro && nombreFiltro !== '__ALL__')
+    ? DATA.filter(c=>c.nombre===nombreFiltro)
+    : DATA;
+
+  if(titleEl){
+    titleEl.textContent = (nombreFiltro && nombreFiltro !== '__ALL__')
+      ? `Análisis por Tramos — ${nombreFiltro}`
+      : 'Análisis por Tramos — Zona Milagro (todos los cobradores)';
+  }
+
+  // acumular saldo inicial / contiene / libera por tramo, sumando entre los cobradores incluidos
+  const acc = {};
+  TRAMO_CODES.forEach(t=> acc[t] = {inicial:0, contiene:0, libera:0, tieneData:false});
+
+  cobradoresIncluidos.forEach(c=>{
+    (c.tramos || []).forEach(t=>{
+      if(!acc[t.tramo]) return;
+      acc[t.tramo].inicial += t.inicial;
+      acc[t.tramo].contiene += t.contiene;
+      acc[t.tramo].libera += t.libera;
+      acc[t.tramo].tieneData = true;
+    });
+  });
+
+  let accTotalInicial = 0, accTotalContiene = 0, accTotalLibera = 0, huboData = false;
+
+  TRAMO_CODES.forEach(tramo=>{
+    const a = acc[tramo];
+    const meta = TRAMO_META[tramo];
+    const tr = document.createElement('tr');
+
+    if(!a.tieneData){
+      tr.innerHTML = `
+        <td>${tramo}</td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td class="num">${fmtPct(meta)}</td>
+        <td>—</td>`;
+      body.appendChild(tr);
+      return;
+    }
+
+    const pctContiene = a.inicial>0 ? a.contiene/a.inicial : 0;
+    const pctLibera = a.inicial>0 ? a.libera/a.inicial : 0;
+    const pctTotal = pctContiene + pctLibera;
+    const cumple = pctTotal >= meta;
+
+    accTotalInicial += a.inicial;
+    accTotalContiene += a.contiene;
+    accTotalLibera += a.libera;
+    huboData = true;
+
+    tr.innerHTML = `
+      <td>${tramo}</td>
+      <td class="num">${fmtPct(pctContiene)}</td>
+      <td class="num">${fmtPct(pctLibera)}</td>
+      <td class="num">${fmtPct(pctTotal)}</td>
+      <td class="num">${fmtPct(meta)}</td>
+      <td><span class="tramo-status ${cumple?'cumple':'no-cumple'}">${cumple? '✓ Cumple' : '✗ No cumple'}</span></td>`;
+    body.appendChild(tr);
+  });
+
+  // fila Total: meta ponderada por saldo inicial de cada tramo (igual método que la sistemática oficial)
+  const trTotal = document.createElement('tr');
+  trTotal.className = 'tramo-total';
+  if(!huboData){
+    trTotal.innerHTML = `<td>Total</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td>—</td>`;
+  } else {
+    const pctContieneTotal = accTotalInicial>0 ? accTotalContiene/accTotalInicial : 0;
+    const pctLiberaTotal = accTotalInicial>0 ? accTotalLibera/accTotalInicial : 0;
+    const pctTotalGlobal = pctContieneTotal + pctLiberaTotal;
+    let sumaMetaPonderada = 0;
+    TRAMO_CODES.forEach(tramo=>{
+      sumaMetaPonderada += TRAMO_META[tramo] * acc[tramo].inicial;
+    });
+    const metaTotalPonderada = accTotalInicial>0 ? sumaMetaPonderada/accTotalInicial : 0;
+    const cumpleTotal = pctTotalGlobal >= metaTotalPonderada;
+    trTotal.innerHTML = `
+      <td>Total</td>
+      <td class="num">${fmtPct(pctContieneTotal)}</td>
+      <td class="num">${fmtPct(pctLiberaTotal)}</td>
+      <td class="num">${fmtPct(pctTotalGlobal)}</td>
+      <td class="num">${fmtPct(metaTotalPonderada)}</td>
+      <td><span class="tramo-status ${cumpleTotal?'cumple':'no-cumple'}">${cumpleTotal? '✓ Cumple' : '✗ No cumple'}</span></td>`;
+  }
+  body.appendChild(trTotal);
 }
 
 function nextLevelInfo(pct, table, inicial){
