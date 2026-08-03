@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rendimiento por Perfil — Cierre de Mes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --navy-900:#0b1f3a;
+  --navy-800:#122a4d;
+  --navy-700:#1a3a66;
+  --blue-500:#2f6fed;
+  --blue-100:#e8f0fe;
+  --green-500:#1c8a5a;
+  --green-100:#e5f5ee;
+  --amber-500:#c58a1f;
+  --amber-100:#fbf1de;
+  --red-500:#c0392b;
+  --red-100:#fbe9e7;
+  --purple-500:#7c4fd1;
+  --purple-100:#f0eafb;
+  --slate-500:#5c7089;
+  --slate-300:#aebcd0;
+  --slate-100:#eef2f7;
+  --paper:#f5f7fb;
+  --white:#ffffff;
+  --border:#dde3ed;
+  --font-display:'Georgia','Iowan Old Style',serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--font-body);background:var(--paper);color:var(--navy-900);-webkit-font-smoothing:antialiased;}
+header.top{background:linear-gradient(135deg,var(--navy-900),var(--navy-700));color:var(--white);padding:26px 32px 22px;}
+header.top .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-300);margin-bottom:6px;}
+header.top h1{font-family:var(--font-display);font-weight:400;font-size:26px;margin:0 0 4px;}
+header.top .sub{font-size:13px;color:var(--slate-300);}
+.wrap{max-width:1440px;margin:0 auto;padding:0 24px;}
+main{padding:24px 24px 60px;}
+.panel{background:var(--white);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--slate-100);}
+.panel-head h2{font-family:var(--font-display);font-size:16px;margin:0;font-weight:400;color:var(--navy-900);}
+.panel-body{padding:18px 20px;}
+.dropdown{width:100%;max-width:520px;padding:11px 14px;border:1px solid var(--border);border-radius:8px;background:var(--white);font-size:14.5px;color:var(--navy-900);font-family:var(--font-body);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%235c7089' d='M5.5 7.5l4.5 4.5 4.5-4.5z'/></svg>");background-repeat:no-repeat;background-position:right 14px center;background-size:16px;font-weight:600;}
+.dropdown:focus{outline:none;border-color:var(--blue-500);}
+.dropdown:disabled{opacity:.5;cursor:not-allowed;}
+
+/* upload panel */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:22px;text-align:center;background:var(--slate-100);transition:border-color .2s,background .2s;cursor:pointer;}
+.upload-zone.drag{border-color:var(--blue-500);background:var(--blue-100);}
+.upload-zone input{display:none;}
+.upload-zone .icon{font-size:26px;margin-bottom:6px;}
+.upload-zone .txt{font-size:13.5px;color:var(--navy-800);font-weight:600;}
+.upload-zone .sub{font-size:11.5px;color:var(--slate-500);margin-top:4px;}
+.upload-status{margin-top:10px;font-size:12.5px;}
+.upload-status.ok{color:var(--green-500);font-weight:700;}
+.upload-status.err{color:var(--red-500);font-weight:700;}
+.upload-meta{font-size:11.5px;color:var(--slate-500);margin-top:6px;}
+.reset-btn{display:inline-block;margin-top:10px;font-size:12px;color:var(--blue-500);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;}
+.empty-state{padding:40px 20px;text-align:center;color:var(--slate-500);font-size:13.5px;}
+
+/* info general */
+.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.info-item{background:var(--slate-100);border-radius:9px;padding:12px 14px;}
+.info-item .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate-500);margin-bottom:4px;}
+.info-item .value{font-family:var(--font-display);font-size:18px;color:var(--navy-900);}
+.badge-perfil{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11.5px;font-weight:700;letter-spacing:.03em;}
+.badge-perfil.ELITE{background:#e5f5ee;color:#1c8a5a;}
+.badge-perfil.SOLIDO{background:#e8f0fe;color:#2f6fed;}
+.badge-perfil.DESARROLLO{background:#eef2f7;color:#122a4d;}
+.badge-perfil.BASE{background:#f0eee9;color:#6b6558;}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.kpi-card{border-radius:11px;padding:16px 18px;color:var(--white);position:relative;overflow:hidden;}
+.kpi-card .label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;opacity:.85;margin-bottom:6px;}
+.kpi-card .value{font-family:var(--font-display);font-size:26px;}
+.kpi-card .sub{font-size:11.5px;opacity:.85;margin-top:3px;}
+.kpi-perfil{background:linear-gradient(135deg,var(--blue-500),#1d4ed8);}
+.kpi-nivel-contiene{background:linear-gradient(135deg,var(--green-500),#0f6b44);}
+.kpi-nivel-mejora{background:linear-gradient(135deg,var(--amber-500),#a06e13);}
+.kpi-pct-contiene{background:linear-gradient(135deg,var(--blue-500),#1d4ed8);}
+.kpi-pct-libera{background:linear-gradient(135deg,var(--green-500),#0f6b44);}
+.kpi-pct-total{background:linear-gradient(135deg,var(--purple-500),#5a35a5);}
+.kpi-falta1{background:linear-gradient(135deg,var(--red-500),#8f2a1e);}
+.kpi-falta2{background:linear-gradient(135deg,#e08a2b,#a6621a);}
+.kpi-falta3{background:linear-gradient(135deg,var(--amber-500),#a06e13);}
+
+/* progress bars (gauge) */
+.gauge-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.gauge .gauge-label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--navy-800);margin-bottom:8px;}
+.gauge .gauge-label span.pct{font-family:var(--font-mono);color:var(--slate-500);font-weight:500;}
+.gauge-track{background:var(--slate-100);border-radius:20px;height:22px;overflow:hidden;position:relative;border:1px solid var(--border);}
+.gauge-fill{height:100%;border-radius:20px;transition:width .4s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;}
+.gauge-fill span{color:var(--white);font-size:11px;font-weight:700;}
+.gauge-fill.n1{background:linear-gradient(90deg,#1c8a5a,#28b978);}
+.gauge-fill.n2{background:linear-gradient(90deg,#2f6fed,#5a8ff7);}
+.gauge-fill.n3{background:linear-gradient(90deg,#c58a1f,#dba53f);}
+.gauge-fill.n4{background:linear-gradient(90deg,#c0392b,#e05a4b);}
+
+/* falta table */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:9px 12px;background:var(--slate-100);color:var(--slate-500);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid var(--border);}
+.num{text-align:right;font-family:var(--font-mono);}
+tr.current-level td{background:var(--blue-100);font-weight:700;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.chart-wrap{padding:16px 20px;}
+canvas{max-height:280px;}
+.footer-note{max-width:1440px;margin:0 auto;padding:0 24px 40px;font-size:11.5px;color:var(--slate-500);}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate-500);margin:0 0 10px;font-weight:700;}
+.dashboard-body{display:none;}
+.dashboard-body.show{display:block;}
+@media(max-width:1000px){
+  .info-grid{grid-template-columns:repeat(2,1fr);}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .gauge-row{grid-template-columns:1fr;}
+  .two-col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Marcimex · Cartera · Sistemática Comercial</div>
+    <h1>Rendimiento por Perfil — Cierre de Mes</h1>
+    <div class="sub" id="subHeader">Sube tu archivo de cierre para comenzar…</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="panel">
+    <div class="panel-head"><h2>Cargar Base de Cierre</h2></div>
+    <div class="panel-body">
+      <label class="upload-zone" id="dropZone" for="fileInput">
+        <div class="icon">📊</div>
+        <div class="txt">Haz clic o arrastra aquí tu archivo Excel de cierre</div>
+        <div class="sub">Formato esperado: hoja "Export" con columnas Cobrador Final, Calificación Mensual, Saldo Inicial, Saldo Deteriora, Saldo Contiene, % Contiene, Saldo Libera, % Libera, Total, Perfil</div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+      </label>
+      <div id="uploadStatus" class="upload-status"></div>
+      <div id="uploadMeta" class="upload-meta"></div>
+      <button id="resetBtn" class="reset-btn" style="display:none;">Cargar otro archivo</button>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty-state">Aún no se ha cargado ningún archivo. Los indicadores aparecerán aquí una vez subas la base.</div>
+
+  <div id="dashboardBody" class="dashboard-body">
+
+    <div class="panel">
+      <div class="panel-head"><h2>Cobrador</h2></div>
+      <div class="panel-body">
+        <select id="cobradorSelect" class="dropdown"></select>
+        <button id="downloadConsolidadoBtn" class="reset-btn" style="display:block;margin-top:12px;">📥 Descargar Excel consolidado (niveles y faltantes de todos los cobradores)</button>
+      </div>
+    </div>
+
+    <div class="panel" id="allPanel" style="display:none;">
+      <div class="panel-head"><h2>Detalle de Todos los Cobradores</h2></div>
+      <div class="panel-body" style="overflow-x:auto;">
+        <table id="allTable">
+          <thead>
+            <tr>
+              <th>Cobrador</th><th>Perfil</th>
+              <th class="num">% Contiene</th><th class="num">Nivel</th><th class="num">Falta % (Contiene)</th><th class="num">Falta $ (Contiene)</th>
+              <th class="num">% Libera</th><th class="num">Nivel</th><th class="num">Falta % (Mejora)</th><th class="num">Falta $ (Mejora)</th>
+              <th class="num">% Total</th><th class="num">Falta $ Total</th>
+            </tr>
+          </thead>
+          <tbody id="allTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel single-view-panel">
+      <div class="panel-head"><h2>Información General</h2></div>
+      <div class="panel-body">
+        <div class="info-grid">
+          <div class="info-item"><div class="label">Nombre</div><div class="value" id="infoNombre" style="font-size:14.5px;">—</div></div>
+          <div class="info-item"><div class="label">Perfil</div><div class="value" id="infoPerfil">—</div></div>
+          <div class="info-item"><div class="label">Saldo Inicial</div><div class="value" id="infoInicial">—</div></div>
+          <div class="info-item"><div class="label">Total Recuperado</div><div class="value" id="infoTotalRec">—</div></div>
+          <div class="info-item"><div class="label">Contiene ($)</div><div class="value" id="infoContiene">—</div></div>
+          <div class="info-item"><div class="label">Libera / Mejora ($)</div><div class="value" id="infoLibera">—</div></div>
+          <div class="info-item"><div class="label">% Contiene</div><div class="value" id="infoPctContiene">—</div></div>
+          <div class="info-item"><div class="label">% Libera</div><div class="value" id="infoPctLibera">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel single-view-panel">
+      <div class="panel-head"><h2>Indicadores</h2></div>
+      <div class="panel-body">
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-perfil"><div class="label">Perfil</div><div class="value" id="kpiPerfil">—</div><div class="sub" id="kpiPerfilSub">—</div></div>
+          <div class="kpi-card kpi-nivel-contiene"><div class="label">Nivel Contiene</div><div class="value" id="kpiNivelContiene">—</div></div>
+          <div class="kpi-card kpi-nivel-mejora"><div class="label">Nivel Mejora</div><div class="value" id="kpiNivelMejora">—</div></div>
+          <div class="kpi-card kpi-pct-contiene"><div class="label">% Contiene</div><div class="value" id="kpiPctContiene">—</div></div>
+          <div class="kpi-card kpi-pct-libera"><div class="label">% Libera</div><div class="value" id="kpiPctLibera">—</div></div>
+          <div class="kpi-card kpi-pct-total"><div class="label">% Total Recuperación</div><div class="value" id="kpiPctTotal">—</div></div>
+          <div class="kpi-card kpi-falta1"><div class="label">Falta para Nivel 1</div><div class="value" id="kpiFalta1">—</div></div>
+          <div class="kpi-card kpi-falta2"><div class="label">Falta para Nivel 2</div><div class="value" id="kpiFalta2">—</div></div>
+          <div class="kpi-card kpi-falta3"><div class="label">Falta para Nivel 3</div><div class="value" id="kpiFalta3">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel single-view-panel">
+      <div class="panel-head"><h2>Velocímetros de Cumplimiento</h2></div>
+      <div class="panel-body">
+        <div class="gauge-row">
+          <div class="gauge">
+            <div class="gauge-label"><span>Contiene</span><span class="pct" id="gaugeContienePct">—</span></div>
+            <div class="gauge-track"><div class="gauge-fill" id="gaugeContiene"><span id="gaugeContieneLabel"></span></div></div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label"><span>Libera</span><span class="pct" id="gaugeLiberaPct">—</span></div>
+            <div class="gauge-track"><div class="gauge-fill" id="gaugeLibera"><span id="gaugeLiberaLabel"></span></div></div>
+          </div>
+          <div class="gauge">
+            <div class="gauge-label"><span>Total</span><span class="pct" id="gaugeTotalPct">—</span></div>
+            <div class="gauge-track"><div class="gauge-fill" id="gaugeTotal"><span id="gaugeTotalLabel"></span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel single-view-panel">
+      <div class="panel-head"><h2>¿Cuánto falta para llegar al siguiente nivel?</h2></div>
+      <div class="panel-body">
+        <div class="two-col">
+          <div>
+            <div class="section-title">Escalera Contiene</div>
+            <table id="faltaContieneTable">
+              <thead><tr><th>Nivel</th><th class="num">Meta</th><th class="num">Actual</th><th class="num">Falta %</th><th class="num">Falta $</th></tr></thead>
+              <tbody id="faltaContieneBody"></tbody>
+            </table>
+          </div>
+          <div>
+            <div class="section-title">Escalera Mejora</div>
+            <table id="faltaMejoraTable">
+              <thead><tr><th>Nivel</th><th class="num">Meta</th><th class="num">Actual</th><th class="num">Falta %</th><th class="num">Falta $</th></tr></thead>
+              <tbody id="faltaMejoraBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel single-view-panel">
+      <div class="panel-head"><h2>Comparativo: Actual vs Meta Nivel 1</h2></div>
+      <div class="chart-wrap"><canvas id="chartComparativo"></canvas></div>
+    </div>
+
+  </div>
+
+</main>
+<div class="footer-note">ElhyAi · Dashboard generado a partir del archivo de cierre de mes cargado por el usuario. La base no incluye columna de Agencia por cobrador; ese campo no se muestra. Niveles y bonos calculados según las tablas oficiales de incentivos Élite / Sólido / Desarrollo / Base.</div>
+
+<script>
+// ---- incentive tables (from official profile sheets) ----
+const TABLES = {
+  ELITE: {
+    bono: 350,
+    contiene: [
+      {nivel:1, min:0.3549, monto:4.80},
+      {nivel:2, min:0.2929, monto:3.60},
+      {nivel:3, min:0.2870, monto:2.70},
+      {nivel:4, min:0,      monto:0.00},
+    ],
+    mejora: [
+      {nivel:1, min:0.3014, monto:7.20},
+      {nivel:2, min:0.2760, monto:5.40},
+      {nivel:3, min:0.2625, monto:3.78},
+      {nivel:4, min:0,      monto:0.00},
+    ]
+  },
+  SOLIDO: {
+    bono: 150,
+    contiene: [
+      {nivel:1, min:0.2617, monto:4.00},
+      {nivel:2, min:0.2547, monto:3.00},
+      {nivel:3, min:0.2477, monto:2.10},
+      {nivel:4, min:0,      monto:0.00},
+    ],
+    mejora: [
+      {nivel:1, min:0.2419, monto:6.00},
+      {nivel:2, min:0.2355, monto:4.50},
+      {nivel:3, min:0.2214, monto:3.15},
+      {nivel:4, min:0,      monto:0.00},
+    ]
+  },
+  DESARROLLO: {
+    bono: 0,
+    contiene: [
+      {nivel:1, min:0.2383, monto:2.00},
+      {nivel:2, min:0.2342, monto:1.50},
+      {nivel:3, min:0.2278, monto:1.05},
+      {nivel:4, min:0,      monto:0.00},
+    ],
+    mejora: [
+      {nivel:1, min:0.2026, monto:3.00},
+      {nivel:2, min:0.1939, monto:2.25},
+      {nivel:3, min:0.1848, monto:1.58},
+      {nivel:4, min:0,      monto:0.00},
+    ]
+  },
+  BASE: {
+    bono: 0,
+    contiene: [
+      {nivel:1, min:0.2383, monto:1.60},
+      {nivel:2, min:0.2342, monto:1.20},
+      {nivel:3, min:0.2278, monto:0.84},
+      {nivel:4, min:0,      monto:0.00},
+    ],
+    mejora: [
+      {nivel:1, min:0.2026, monto:2.40},
+      {nivel:2, min:0.1939, monto:1.80},
+      {nivel:3, min:0.1848, monto:1.26},
+      {nivel:4, min:0,      monto:0.00},
+    ]
+  }
+};
+
+let DATA = [];
+let periodoLabel = '';
+
+const fmtMoney = n => '$' + n.toLocaleString('es-EC',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtPct = n => (n*100).toFixed(2)+'%';
+const selectEl = document.getElementById('cobradorSelect');
+
+// ---------- FILE UPLOAD & PARSING ----------
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const uploadStatus = document.getElementById('uploadStatus');
+const uploadMeta = document.getElementById('uploadMeta');
+const resetBtn = document.getElementById('resetBtn');
+const emptyState = document.getElementById('emptyState');
+const dashboardBody = document.getElementById('dashboardBody');
+
+['dragover','dragenter'].forEach(evt=>{
+  dropZone.addEventListener(evt, e=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+});
+['dragleave','drop'].forEach(evt=>{
+  dropZone.addEventListener(evt, e=>{ e.preventDefault(); dropZone.classList.remove('drag'); });
+});
+dropZone.addEventListener('drop', e=>{
+  const f = e.dataTransfer.files[0];
+  if(f) handleFile(f);
+});
+fileInput.addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(f) handleFile(f);
+});
+resetBtn.addEventListener('click', ()=>{
+  DATA = [];
+  fileInput.value = '';
+  uploadStatus.textContent = '';
+  uploadStatus.className = 'upload-status';
+  uploadMeta.textContent = '';
+  resetBtn.style.display = 'none';
+  dashboardBody.classList.remove('show');
+  emptyState.style.display = 'block';
+  document.getElementById('subHeader').textContent = 'Sube tu archivo de cierre para comenzar…';
+});
+
+// Respaldo: si en algún archivo la celda de "Perfil" viene vacía para un cobrador,
+// se usa este perfil conocido en vez de caer por defecto en BASE.
+const KNOWN_PROFILES = {
+  'CARRANZA JIMENEZ FRANKLIN GEOVANNY': 'DESARROLLO',
+  'AGUILAR CONTRERAS BYRON LUIS': 'SOLIDO',
+};
+function lookupKnownProfile(nombre){
+  const key = String(nombre||'').replace(/\s+/g,' ').trim().toUpperCase();
+  return KNOWN_PROFILES[key] || null;
+}
+
+function normalizePerfilStr(s){
+  return String(s||'').trim().toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // quita tildes: SÓLIDO -> SOLIDO
+}
+
+function num(v){
+  if(v === null || v === undefined || v === '') return 0;
+  if(typeof v === 'number') return v;
+  const cleaned = String(v).replace(/[^0-9.,-]/g,'').replace(/\./g,'').replace(',', '.');
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+function normalizeHeader(h){
+  return String(h||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // strip accents
+}
+
+function handleFile(file){
+  uploadStatus.className = 'upload-status';
+  uploadStatus.textContent = 'Procesando archivo…';
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      // prefer a sheet named "Export", otherwise first sheet
+      const sheetName = wb.SheetNames.find(n=>n.trim().toLowerCase()==='export') || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+      if(!rows.length){ throw new Error('El archivo no tiene filas de datos.'); }
+
+      const headerRow = rows[0].map(normalizeHeader);
+      const idx = {
+        cobrador: headerRow.findIndex(h=>h.includes('cobrador')),
+        calificacion: headerRow.findIndex(h=>h.includes('calificacion')),
+        inicial: headerRow.findIndex(h=>h.includes('saldo inicial')),
+        deteriora: headerRow.findIndex(h=>h.includes('deteriora')),
+        contiene: headerRow.findIndex(h=>h.includes('saldo contiene')),
+        pctContiene: headerRow.findIndex(h=>h.includes('porcentaje contiene') || h.includes('% contiene')),
+        libera: headerRow.findIndex(h=>h.includes('saldo libera')),
+        pctLibera: headerRow.findIndex(h=>h.includes('porcentaje libera') || h.includes('% libera')),
+        perfil: headerRow.findIndex(h=>h.includes('perfil')),
+      };
+      if(idx.cobrador === -1 || idx.calificacion === -1 || idx.inicial === -1){
+        throw new Error('No se reconocen las columnas esperadas (Cobrador Final, Calificación Mensual, Saldo Inicial...).');
+      }
+
+      let currentNombre = null;
+      let currentPerfil = null;
+      const parsed = [];
+
+      for(let r=1; r<rows.length; r++){
+        const row = rows[r];
+        if(!row || row.every(c=>c===null || c==='')) continue;
+
+        const nombreCell = row[idx.cobrador];
+        const perfilCell = idx.perfil>=0 ? row[idx.perfil] : null;
+        if(nombreCell !== null && String(nombreCell).trim() !== ''){
+          currentNombre = String(nombreCell).trim();
+        }
+        if(perfilCell !== null && String(perfilCell).trim() !== ''){
+          currentPerfil = normalizePerfilStr(perfilCell);
+        }
+
+        const calif = row[idx.calificacion];
+        const califStr = calif === null ? '' : String(calif).trim().toLowerCase();
+        if(califStr === 'total'){
+          if(!currentNombre) continue;
+          const inicial = num(row[idx.inicial]);
+          const deteriora = num(row[idx.deteriora]);
+          const contiene = num(row[idx.contiene]);
+          const libera = num(row[idx.libera]);
+          let pctContieneRaw = idx.pctContiene>=0 ? num(row[idx.pctContiene]) : (inicial>0 ? contiene/inicial : 0);
+          let pctLiberaRaw = idx.pctLibera>=0 ? num(row[idx.pctLibera]) : (inicial>0 ? libera/inicial : 0);
+          // if percentages came in as e.g. 24.29 instead of 0.2429, normalize
+          if(pctContieneRaw > 1) pctContieneRaw = pctContieneRaw/100;
+          if(pctLiberaRaw > 1) pctLiberaRaw = pctLiberaRaw/100;
+
+          let perfil = normalizePerfilStr(lookupKnownProfile(currentNombre) || currentPerfil || 'BASE');
+          if(!TABLES[perfil]) perfil = 'BASE';
+
+          parsed.push({
+            nombre: currentNombre,
+            perfil,
+            inicial, deteriora, contiene, libera,
+            pctContieneRaw, pctLiberaRaw
+          });
+          currentNombre = null;
+          currentPerfil = null;
+        }
+      }
+
+      if(!parsed.length){
+        throw new Error('No se encontraron filas "Total" por cobrador. Revisa el formato del archivo.');
+      }
+
+      DATA = parsed;
+      uploadStatus.classList.add('ok');
+      uploadStatus.textContent = `✓ Archivo cargado correctamente — ${DATA.length} cobradores detectados.`;
+      uploadMeta.textContent = `Archivo: ${file.name} · Hoja: ${sheetName}`;
+      resetBtn.style.display = 'inline-block';
+      emptyState.style.display = 'none';
+      dashboardBody.classList.add('show');
+
+      periodoLabel = file.name.replace(/\.[^/.]+$/, '').replace(/_/g,' ');
+      document.getElementById('subHeader').textContent = `Cierre ${periodoLabel} · ${DATA.length} cobradores evaluados`;
+
+      populateDropdown();
+      render();
+    }catch(err){
+      uploadStatus.classList.add('err');
+      uploadStatus.textContent = '✗ Error: ' + err.message;
+      uploadMeta.textContent = '';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function populateDropdown(){
+  selectEl.innerHTML = '';
+  const optAll = document.createElement('option');
+  optAll.value = '__ALL__'; optAll.textContent = '— Todos los cobradores —';
+  selectEl.appendChild(optAll);
+  const cobradores = DATA.map(c=>c.nombre).sort();
+  cobradores.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    selectEl.appendChild(opt);
+  });
+}
+selectEl.addEventListener('change', ()=> render());
+
+// ---------- RENDER LOGIC (same as before) ----------
+function getLevel(pct, table){
+  for(const row of table){
+    if(pct >= row.min) return row;
+  }
+  return table[table.length-1];
+}
+
+function render(){
+  if(!DATA.length) return;
+  const nombre = selectEl.value;
+
+  if(nombre === '__ALL__'){
+    document.getElementById('allPanel').style.display = 'block';
+    document.querySelectorAll('.single-view-panel').forEach(p=> p.style.display = 'none');
+    renderAllTable();
+    return;
+  } else {
+    document.getElementById('allPanel').style.display = 'none';
+    document.querySelectorAll('.single-view-panel').forEach(p=> p.style.display = 'block');
+  }
+
+  const c = DATA.find(x=>x.nombre===nombre) || DATA[0];
+  if(!c) return;
+
+  const perfil = c.perfil;
+  const table = TABLES[perfil] || TABLES.BASE;
+  const pctContiene = c.pctContieneRaw;
+  const pctLibera = c.pctLiberaRaw;
+  const pctTotal = pctContiene + pctLibera;
+  const totalRecuperadoMonto = c.contiene + c.libera;
+
+  // info general
+  document.getElementById('infoNombre').textContent = c.nombre;
+  document.getElementById('infoPerfil').innerHTML = `<span class="badge-perfil ${perfil}">${perfil}</span>`;
+  document.getElementById('infoInicial').textContent = fmtMoney(c.inicial);
+  document.getElementById('infoTotalRec').textContent = fmtMoney(totalRecuperadoMonto);
+  document.getElementById('infoContiene').textContent = fmtMoney(c.contiene);
+  document.getElementById('infoLibera').textContent = fmtMoney(c.libera);
+  document.getElementById('infoPctContiene').textContent = fmtPct(pctContiene);
+  document.getElementById('infoPctLibera').textContent = fmtPct(pctLibera);
+
+  // nivel lookup
+  const nivelContiene = getLevel(pctContiene, table.contiene);
+  const nivelMejora = getLevel(pctLibera, table.mejora);
+
+  // KPI cards
+  document.getElementById('kpiPerfil').textContent = perfil.charAt(0)+perfil.slice(1).toLowerCase();
+  document.getElementById('kpiPerfilSub').textContent = table.bono>0 ? `Bono fijo $${table.bono}/mes` : 'Solo comisión';
+  document.getElementById('kpiNivelContiene').textContent = 'Nivel ' + nivelContiene.nivel;
+  document.getElementById('kpiNivelMejora').textContent = 'Nivel ' + nivelMejora.nivel;
+  document.getElementById('kpiPctContiene').textContent = fmtPct(pctContiene);
+  document.getElementById('kpiPctLibera').textContent = fmtPct(pctLibera);
+  document.getElementById('kpiPctTotal').textContent = fmtPct(pctTotal);
+
+  // falta tables (Contiene / Mejora)
+  const currentInicial = c.inicial;
+  function buildFaltaRows(pct, table, bodyId){
+    const body = document.getElementById(bodyId);
+    body.innerHTML = '';
+    let faltas = [];
+    [1,2,3].forEach(n=>{
+      const row = table.find(r=>r.nivel===n);
+      const meta = row.min;
+      const faltaPct = Math.max(0, meta - pct);
+      const faltaMonto = faltaPct * currentInicial;
+      faltas.push(faltaPct);
+      const tr = document.createElement('tr');
+      const isCurrent = (n === getLevel(pct, table).nivel);
+      if(isCurrent) tr.className = 'current-level';
+      tr.innerHTML = `
+        <td>Nivel ${n}</td>
+        <td class="num">${fmtPct(meta)}</td>
+        <td class="num">${fmtPct(pct)}</td>
+        <td class="num">${faltaPct>0? fmtPct(faltaPct) : '✓ Alcanzado'}</td>
+        <td class="num">${faltaPct>0? fmtMoney(faltaMonto) : '—'}</td>`;
+      body.appendChild(tr);
+    });
+    return faltas;
+  }
+  const faltasContiene = buildFaltaRows(pctContiene, table.contiene, 'faltaContieneBody');
+  const faltasMejora = buildFaltaRows(pctLibera, table.mejora, 'faltaMejoraBody');
+
+  document.getElementById('kpiFalta1').textContent = fmtPct(faltasContiene[0]);
+  document.getElementById('kpiFalta2').textContent = fmtPct(faltasContiene[1]);
+  document.getElementById('kpiFalta3').textContent = fmtPct(faltasContiene[2]);
+
+  // gauges
+  function renderGauge(pct, table, elId, labelId, pctId){
+    const nivel = getLevel(pct, table);
+    const n1min = table[0].min;
+    const width = Math.min(100, (pct / n1min) * 100);
+    const fillEl = document.getElementById(elId);
+    fillEl.className = 'gauge-fill n' + nivel.nivel;
+    fillEl.style.width = width.toFixed(1) + '%';
+    document.getElementById(labelId).textContent = width>15 ? 'Nivel '+nivel.nivel : '';
+    document.getElementById(pctId).textContent = fmtPct(pct) + ' / meta N1 ' + fmtPct(n1min);
+  }
+  renderGauge(pctContiene, table.contiene, 'gaugeContiene', 'gaugeContieneLabel', 'gaugeContienePct');
+  renderGauge(pctLibera, table.mejora, 'gaugeLibera', 'gaugeLiberaLabel', 'gaugeLiberaPct');
+
+  const totalN1 = table.contiene[0].min + table.mejora[0].min;
+  const totalWidth = Math.min(100, (pctTotal/totalN1)*100);
+  const totalFill = document.getElementById('gaugeTotal');
+  totalFill.className = 'gauge-fill ' + (pctTotal>=totalN1?'n1':(totalWidth>=70?'n2':(totalWidth>=40?'n3':'n4')));
+  totalFill.style.width = totalWidth.toFixed(1)+'%';
+  document.getElementById('gaugeTotalLabel').textContent = totalWidth>15 ? fmtPct(pctTotal) : '';
+  document.getElementById('gaugeTotalPct').textContent = fmtPct(pctTotal) + ' / meta N1 ' + fmtPct(totalN1);
+
+  renderChart(pctContiene, pctLibera, table);
+}
+
+// ---------- EXPORT CONSOLIDADO (niveles y faltantes por cobrador) ----------
+function renderAllTable(){
+  const body = document.getElementById('allTableBody');
+  body.innerHTML = '';
+  const sorted = [...DATA].sort((a,b)=> a.nombre.localeCompare(b.nombre));
+  sorted.forEach(c=>{
+    const table = TABLES[c.perfil] || TABLES.BASE;
+    const infoContiene = nextLevelInfo(c.pctContieneRaw, table.contiene, c.inicial);
+    const infoMejora = nextLevelInfo(c.pctLiberaRaw, table.mejora, c.inicial);
+    const pctTotal = c.pctContieneRaw + c.pctLiberaRaw;
+    const faltaTotalMonto = infoContiene.faltaMonto + infoMejora.faltaMonto;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${c.nombre}</td>
+      <td><span class="badge-perfil ${c.perfil}">${c.perfil}</span></td>
+      <td class="num">${fmtPct(c.pctContieneRaw)}</td>
+      <td class="num">${infoContiene.nivelActual}</td>
+      <td class="num">${infoContiene.siguienteNivel ? fmtPct(infoContiene.faltaPct) : '✓ Máximo'}</td>
+      <td class="num">${infoContiene.siguienteNivel ? fmtMoney(infoContiene.faltaMonto) : '—'}</td>
+      <td class="num">${fmtPct(c.pctLiberaRaw)}</td>
+      <td class="num">${infoMejora.nivelActual}</td>
+      <td class="num">${infoMejora.siguienteNivel ? fmtPct(infoMejora.faltaPct) : '✓ Máximo'}</td>
+      <td class="num">${infoMejora.siguienteNivel ? fmtMoney(infoMejora.faltaMonto) : '—'}</td>
+      <td class="num">${fmtPct(pctTotal)}</td>
+      <td class="num">${faltaTotalMonto>0 ? fmtMoney(faltaTotalMonto) : '✓ Máximo'}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function nextLevelInfo(pct, table, inicial){
+  const current = getLevel(pct, table);
+  if(current.nivel === 1){
+    return { nivelActual: 1, siguienteNivel: null, metaSiguiente: null, faltaPct: 0, faltaMonto: 0 };
+  }
+  const targetNivel = current.nivel - 1;
+  const targetRow = table.find(r=>r.nivel===targetNivel);
+  const faltaPct = Math.max(0, targetRow.min - pct);
+  const faltaMonto = faltaPct * inicial;
+  return { nivelActual: current.nivel, siguienteNivel: targetNivel, metaSiguiente: targetRow.min, faltaPct, faltaMonto };
+}
+
+const downloadBtn = document.getElementById('downloadConsolidadoBtn');
+downloadBtn.addEventListener('click', ()=>{
+  if(!DATA.length) return;
+
+  const rows = DATA.map(c=>{
+    const table = TABLES[c.perfil] || TABLES.BASE;
+    const infoContiene = nextLevelInfo(c.pctContieneRaw, table.contiene, c.inicial);
+    const infoMejora = nextLevelInfo(c.pctLiberaRaw, table.mejora, c.inicial);
+    const pctTotal = c.pctContieneRaw + c.pctLiberaRaw;
+
+    return {
+      'Cobrador': c.nombre,
+      'Perfil': c.perfil,
+      'Saldo Inicial': c.inicial,
+      '% Contiene Actual': Number((c.pctContieneRaw*100).toFixed(2)),
+      'Nivel Contiene Actual': infoContiene.nivelActual,
+      'Siguiente Nivel Contiene': infoContiene.siguienteNivel ?? 'Máximo alcanzado',
+      'Meta % Siguiente Nivel Contiene': infoContiene.metaSiguiente!==null ? Number((infoContiene.metaSiguiente*100).toFixed(2)) : '—',
+      'Falta % Contiene': Number((infoContiene.faltaPct*100).toFixed(2)),
+      'Falta $ Contiene': Number(infoContiene.faltaMonto.toFixed(2)),
+      '% Libera (Mejora) Actual': Number((c.pctLiberaRaw*100).toFixed(2)),
+      'Nivel Mejora Actual': infoMejora.nivelActual,
+      'Siguiente Nivel Mejora': infoMejora.siguienteNivel ?? 'Máximo alcanzado',
+      'Meta % Siguiente Nivel Mejora': infoMejora.metaSiguiente!==null ? Number((infoMejora.metaSiguiente*100).toFixed(2)) : '—',
+      'Falta % Mejora': Number((infoMejora.faltaPct*100).toFixed(2)),
+      'Falta $ Mejora': Number(infoMejora.faltaMonto.toFixed(2)),
+      '% Total Recuperación': Number((pctTotal*100).toFixed(2)),
+      'Falta $ Total (Contiene + Mejora)': Number((infoContiene.faltaMonto + infoMejora.faltaMonto).toFixed(2)),
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = Object.keys(rows[0]).map(k=>({ wch: Math.max(k.length, 14) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Consolidado Niveles');
+
+  const base = periodoLabel ? periodoLabel.replace(/[^a-zA-Z0-9_ ]/g,'').trim() : 'Cierre';
+  XLSX.writeFile(wb, `Consolidado_Niveles_Faltantes_${base || 'Cierre'}.xlsx`);
+});
+
+let chart;
+function renderChart(pctContiene, pctLibera, table){
+  const ctx = document.getElementById('chartComparativo');
+  if(chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:['Contiene','Libera'],
+      datasets:[
+        {label:'Actual', data:[pctContiene*100, pctLibera*100], backgroundColor:'#2f6fed'},
+        {label:'Meta Nivel 1', data:[table.contiene[0].min*100, table.mejora[0].min*100], backgroundColor:'#1c8a5a'},
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      scales:{ y:{ ticks:{callback:v=>v+'%'} } },
+      plugins:{legend:{position:'top', labels:{boxWidth:12,font:{size:11}}}}
+    }
+  });
+}
+</script>
+</body>
+</html>
