@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -287,7 +288,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
   </div>
 
 </main>
-<div class="footer-note">ElhyAi · Dashboard generado a partir del archivo de cierre de mes cargado por el usuario. La base no incluye columna de Agencia por cobrador; ese campo no se muestra. Niveles y bonos calculados según las tablas oficiales de incentivos Élite / Sólido / Desarrollo / Base.</div>
+<div class="footer-note">ElhyAi · Dashboard generado a partir del archivo de cierre de mes cargado por el usuario. La base no incluye columna de Agencia por cobrador; ese campo no se muestra. Niveles y bonos calculados según las tablas oficiales de incentivos Élite / Sólido / Desarrollo / Base. Perfiles de respaldo actualizados según RANKING_CIERRE_FIN_DE_MES_DE_JULIO.</div>
 
 <script>
 // ---- incentive tables (from official profile sheets) ----
@@ -402,9 +403,22 @@ resetBtn.addEventListener('click', ()=>{
 
 // Respaldo: si en algún archivo la celda de "Perfil" viene vacía para un cobrador,
 // se usa este perfil conocido en vez de caer por defecto en BASE.
+// Actualizado según RANKING_CIERRE_FIN_DE_MES_DE_JULIO (hoja Export, columna Perfil).
 const KNOWN_PROFILES = {
-  'CARRANZA JIMENEZ FRANKLIN GEOVANNY': 'DESARROLLO',
   'AGUILAR CONTRERAS BYRON LUIS': 'SOLIDO',
+  'CARRANZA JIMENEZ FRANKLIN GEOVANNY': 'DESARROLLO',
+  'CHAVEZ GOMEZCUELLO MARIO JAVIER': 'BASE',
+  'GONZALEZ CORTEZ ADOLFO MODESTO': 'BASE',
+  'GUILLERMO MONTANO LUIS AGUSTIN': 'BASE',
+  'JARA LLIGUIN JULIO LEONARDO': 'BASE',
+  'MENDOZA JIMENEZ VICTOR DARIO': 'BASE',
+  'MILLAN CARVAJAL RAFAEL ENRIQUE': 'BASE',
+  'MORAN BARROS GABRIEL EPIFANIO': 'ELITE',
+  'MOSQUERA MEDINA HECTOR DANIEL': 'ELITE',
+  'OLAYA ACURIO JOSE GABRIEL': 'BASE',
+  'ORTEGA URGILES CELIO ISAIAS': 'BASE',
+  'QUINONEZ AYALA JEFFERSON JAVIER': 'BASE',
+  'VILLARREAL NAVARRETE FAUSTO ALBERTO': 'ELITE',
 };
 function lookupKnownProfile(nombre){
   const key = String(nombre||'').replace(/\s+/g,' ').trim().toUpperCase();
