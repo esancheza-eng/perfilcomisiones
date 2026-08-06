@@ -46,7 +46,7 @@ main{padding:24px 24px 60px;}
 .dropdown{width:100%;max-width:520px;padding:11px 14px;border:1px solid var(--border);border-radius:8px;background:var(--white);font-size:14.5px;color:var(--navy-900);font-family:var(--font-body);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%235c7089' d='M5.5 7.5l4.5 4.5 4.5-4.5z'/></svg>");background-repeat:no-repeat;background-position:right 14px center;background-size:16px;font-weight:600;}
 .dropdown:focus{outline:none;border-color:var(--blue-500);}
 .dropdown:disabled{opacity:.5;cursor:not-allowed;}
-
+ 
 /* upload panel */
 .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:22px;text-align:center;background:var(--slate-100);transition:border-color .2s,background .2s;cursor:pointer;}
 .upload-zone.drag{border-color:var(--blue-500);background:var(--blue-100);}
@@ -60,7 +60,7 @@ main{padding:24px 24px 60px;}
 .upload-meta{font-size:11.5px;color:var(--slate-500);margin-top:6px;}
 .reset-btn{display:inline-block;margin-top:10px;font-size:12px;color:var(--blue-500);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;}
 .empty-state{padding:40px 20px;text-align:center;color:var(--slate-500);font-size:13.5px;}
-
+ 
 /* info general */
 .info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
 .info-item{background:var(--slate-100);border-radius:9px;padding:12px 14px;}
@@ -71,7 +71,7 @@ main{padding:24px 24px 60px;}
 .badge-perfil.SOLIDO{background:#e8f0fe;color:#2f6fed;}
 .badge-perfil.DESARROLLO{background:#eef2f7;color:#122a4d;}
 .badge-perfil.BASE{background:#f0eee9;color:#6b6558;}
-
+ 
 /* KPI cards */
 .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .kpi-card{border-radius:11px;padding:16px 18px;color:var(--white);position:relative;overflow:hidden;}
@@ -87,7 +87,7 @@ main{padding:24px 24px 60px;}
 .kpi-falta1{background:linear-gradient(135deg,var(--red-500),#8f2a1e);}
 .kpi-falta2{background:linear-gradient(135deg,#e08a2b,#a6621a);}
 .kpi-falta3{background:linear-gradient(135deg,var(--amber-500),#a06e13);}
-
+ 
 /* progress bars (gauge) */
 .gauge-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
 .gauge .gauge-label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--navy-800);margin-bottom:8px;}
@@ -99,7 +99,7 @@ main{padding:24px 24px 60px;}
 .gauge-fill.n2{background:linear-gradient(90deg,#2f6fed,#5a8ff7);}
 .gauge-fill.n3{background:linear-gradient(90deg,#c58a1f,#dba53f);}
 .gauge-fill.n4{background:linear-gradient(90deg,#c0392b,#e05a4b);}
-
+ 
 /* falta table */
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th{text-align:left;padding:9px 12px;background:var(--slate-100);color:var(--slate-500);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
@@ -113,14 +113,14 @@ canvas{max-height:280px;}
 .section-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate-500);margin:0 0 10px;font-weight:700;}
 .dashboard-body{display:none;}
 .dashboard-body.show{display:block;}
-
+ 
 /* tramos table */
 .tramo-status{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;}
 .tramo-status.cumple{background:var(--green-100);color:var(--green-500);}
 .tramo-status.no-cumple{background:var(--red-100);color:var(--red-500);}
 tr.tramo-total td{background:var(--slate-100);font-weight:700;}
 tr.tramo-total td.num{color:var(--navy-900);}
-
+ 
 @media(max-width:1000px){
   .info-grid{grid-template-columns:repeat(2,1fr);}
   .kpi-grid{grid-template-columns:repeat(2,1fr);}
@@ -130,7 +130,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
 </style>
 </head>
 <body>
-
+ 
 <header class="top">
   <div class="wrap">
     <div class="eyebrow">Marcimex · Cartera · Sistemática Comercial</div>
@@ -138,9 +138,9 @@ tr.tramo-total td.num{color:var(--navy-900);}
     <div class="sub" id="subHeader">Sube tu archivo de cierre para comenzar…</div>
   </div>
 </header>
-
+ 
 <main class="wrap">
-
+ 
   <div class="panel">
     <div class="panel-head"><h2>Cargar Base de Cierre</h2></div>
     <div class="panel-body">
@@ -155,11 +155,11 @@ tr.tramo-total td.num{color:var(--navy-900);}
       <button id="resetBtn" class="reset-btn" style="display:none;">Cargar otro archivo</button>
     </div>
   </div>
-
+ 
   <div id="emptyState" class="empty-state">Aún no se ha cargado ningún archivo. Los indicadores aparecerán aquí una vez subas la base.</div>
-
+ 
   <div id="dashboardBody" class="dashboard-body">
-
+ 
     <div class="panel">
       <div class="panel-head"><h2>Cobrador</h2></div>
       <div class="panel-body">
@@ -167,7 +167,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
         <button id="downloadConsolidadoBtn" class="reset-btn" style="display:block;margin-top:12px;">📥 Descargar Excel consolidado (niveles y faltantes de todos los cobradores)</button>
       </div>
     </div>
-
+ 
     <div class="panel" id="allPanel" style="display:none;">
       <div class="panel-head"><h2>Detalle de Todos los Cobradores</h2></div>
       <div class="panel-body" style="overflow-x:auto;">
@@ -184,7 +184,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
         </table>
       </div>
     </div>
-
+ 
     <div class="panel" id="tramosPanel" style="display:none;">
       <div class="panel-head"><h2 id="tramosPanelTitle">Análisis por Tramos — Zona Milagro</h2></div>
       <div class="panel-body" style="overflow-x:auto;">
@@ -203,7 +203,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
         </table>
       </div>
     </div>
-
+ 
     <div class="panel single-view-panel">
       <div class="panel-head"><h2>Información General</h2></div>
       <div class="panel-body">
@@ -219,7 +219,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
         </div>
       </div>
     </div>
-
+ 
     <div class="panel single-view-panel">
       <div class="panel-head"><h2>Indicadores</h2></div>
       <div class="panel-body">
@@ -236,7 +236,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
         </div>
       </div>
     </div>
-
+ 
     <div class="panel single-view-panel">
       <div class="panel-head"><h2>Velocímetros de Cumplimiento</h2></div>
       <div class="panel-body">
@@ -256,7 +256,7 @@ tr.tramo-total td.num{color:var(--navy-900);}
         </div>
       </div>
     </div>
-
+ 
     <div class="panel single-view-panel">
       <div class="panel-head"><h2>¿Cuánto falta para llegar al siguiente nivel?</h2></div>
       <div class="panel-body">
@@ -278,17 +278,17 @@ tr.tramo-total td.num{color:var(--navy-900);}
         </div>
       </div>
     </div>
-
+ 
     <div class="panel single-view-panel">
       <div class="panel-head"><h2>Comparativo: Actual vs Meta Nivel 1</h2></div>
       <div class="chart-wrap"><canvas id="chartComparativo"></canvas></div>
     </div>
-
+ 
   </div>
-
+ 
 </main>
 <div class="footer-note">ElhyAi · Dashboard generado a partir del archivo de cierre de mes cargado por el usuario. La base no incluye columna de Agencia por cobrador; ese campo no se muestra. Niveles y bonos calculados según las tablas oficiales de incentivos Élite / Sólido / Desarrollo / Base. Perfiles de respaldo actualizados según RANKING_CIERRE_FIN_DE_MES_DE_JULIO.</div>
-
+ 
 <script>
 // ---- incentive tables (from official profile sheets) ----
 const TABLES = {
@@ -353,18 +353,18 @@ const TABLES = {
     ]
   }
 };
-
+ 
 // ---- tramos oficiales y sus metas (fijas) — la data real (% contiene/libera) se calcula desde el archivo cargado ----
 const TRAMO_CODES = ['AA','A','B','C','D','E','E1'];
 const TRAMO_META = { AA:0.9300, A:0.7000, B:0.5000, C:0.4000, D:0.3000, E:0.2000, E1:0.1200 };
-
+ 
 let DATA = [];
 let periodoLabel = '';
-
+ 
 const fmtMoney = n => '$' + n.toLocaleString('es-EC',{minimumFractionDigits:0,maximumFractionDigits:0});
 const fmtPct = n => (n*100).toFixed(2)+'%';
 const selectEl = document.getElementById('cobradorSelect');
-
+ 
 // ---------- FILE UPLOAD & PARSING ----------
 const fileInput = document.getElementById('fileInput');
 const dropZone = document.getElementById('dropZone');
@@ -373,7 +373,7 @@ const uploadMeta = document.getElementById('uploadMeta');
 const resetBtn = document.getElementById('resetBtn');
 const emptyState = document.getElementById('emptyState');
 const dashboardBody = document.getElementById('dashboardBody');
-
+ 
 ['dragover','dragenter'].forEach(evt=>{
   dropZone.addEventListener(evt, e=>{ e.preventDefault(); dropZone.classList.add('drag'); });
 });
@@ -399,7 +399,7 @@ resetBtn.addEventListener('click', ()=>{
   emptyState.style.display = 'block';
   document.getElementById('subHeader').textContent = 'Sube tu archivo de cierre para comenzar…';
 });
-
+ 
 // Respaldo: si en algún archivo la celda de "Perfil" viene vacía para un cobrador,
 // se usa este perfil conocido en vez de caer por defecto en BASE.
 // Actualizado según RANKING_CIERRE_FIN_DE_MES_DE_JULIO (hoja Export, columna Perfil).
@@ -423,12 +423,12 @@ function lookupKnownProfile(nombre){
   const key = String(nombre||'').replace(/\s+/g,' ').trim().toUpperCase();
   return KNOWN_PROFILES[key] || null;
 }
-
+ 
 function normalizePerfilStr(s){
   return String(s||'').trim().toUpperCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // quita tildes: SÓLIDO -> SOLIDO
 }
-
+ 
 function num(v){
   if(v === null || v === undefined || v === '') return 0;
   if(typeof v === 'number') return v;
@@ -436,12 +436,12 @@ function num(v){
   const n = parseFloat(cleaned);
   return isNaN(n) ? 0 : n;
 }
-
+ 
 function normalizeHeader(h){
   return String(h||'').trim().toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // strip accents
 }
-
+ 
 function handleFile(file){
   uploadStatus.className = 'upload-status';
   uploadStatus.textContent = 'Procesando archivo…';
@@ -454,7 +454,7 @@ function handleFile(file){
       const ws = wb.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
       if(!rows.length){ throw new Error('El archivo no tiene filas de datos.'); }
-
+ 
       const headerRow = rows[0].map(normalizeHeader);
       const idx = {
         cobrador: headerRow.findIndex(h=>h.includes('cobrador')),
@@ -470,16 +470,16 @@ function handleFile(file){
       if(idx.cobrador === -1 || idx.calificacion === -1 || idx.inicial === -1){
         throw new Error('No se reconocen las columnas esperadas (Cobrador Final, Calificación Mensual, Saldo Inicial...).');
       }
-
+ 
       let currentNombre = null;
       let currentPerfil = null;
       let currentTramos = [];
       const parsed = [];
-
+ 
       for(let r=1; r<rows.length; r++){
         const row = rows[r];
         if(!row || row.every(c=>c===null || c==='')) continue;
-
+ 
         const nombreCell = row[idx.cobrador];
         const perfilCell = idx.perfil>=0 ? row[idx.perfil] : null;
         if(nombreCell !== null && String(nombreCell).trim() !== ''){
@@ -488,11 +488,11 @@ function handleFile(file){
         if(perfilCell !== null && String(perfilCell).trim() !== ''){
           currentPerfil = normalizePerfilStr(perfilCell);
         }
-
+ 
         const calif = row[idx.calificacion];
         const califStr = calif === null ? '' : String(calif).trim().toLowerCase();
         const califUpper = calif === null ? '' : String(calif).trim().toUpperCase();
-
+ 
         // filas de tramo (AA, A, B, C, D, E, E1): guardan el detalle por cobrador
         if(TRAMO_CODES.includes(califUpper) && currentNombre){
           const tInicial = num(row[idx.inicial]);
@@ -511,7 +511,7 @@ function handleFile(file){
             pctLiberaRaw: tPctLibera
           });
         }
-
+ 
         if(califStr === 'total'){
           if(!currentNombre) continue;
           const inicial = num(row[idx.inicial]);
@@ -523,10 +523,10 @@ function handleFile(file){
           // if percentages came in as e.g. 24.29 instead of 0.2429, normalize
           if(pctContieneRaw > 1) pctContieneRaw = pctContieneRaw/100;
           if(pctLiberaRaw > 1) pctLiberaRaw = pctLiberaRaw/100;
-
+ 
           let perfil = normalizePerfilStr(lookupKnownProfile(currentNombre) || currentPerfil || 'BASE');
           if(!TABLES[perfil]) perfil = 'BASE';
-
+ 
           parsed.push({
             nombre: currentNombre,
             perfil,
@@ -539,11 +539,11 @@ function handleFile(file){
           currentTramos = [];
         }
       }
-
+ 
       if(!parsed.length){
         throw new Error('No se encontraron filas "Total" por cobrador. Revisa el formato del archivo.');
       }
-
+ 
       DATA = parsed;
       uploadStatus.classList.add('ok');
       uploadStatus.textContent = `✓ Archivo cargado correctamente — ${DATA.length} cobradores detectados.`;
@@ -551,10 +551,10 @@ function handleFile(file){
       resetBtn.style.display = 'inline-block';
       emptyState.style.display = 'none';
       dashboardBody.classList.add('show');
-
+ 
       periodoLabel = file.name.replace(/\.[^/.]+$/, '').replace(/_/g,' ');
       document.getElementById('subHeader').textContent = `Cierre ${periodoLabel} · ${DATA.length} cobradores evaluados`;
-
+ 
       populateDropdown();
       render();
     }catch(err){
@@ -565,7 +565,7 @@ function handleFile(file){
   };
   reader.readAsArrayBuffer(file);
 }
-
+ 
 function populateDropdown(){
   selectEl.innerHTML = '';
   const optAll = document.createElement('option');
@@ -579,7 +579,7 @@ function populateDropdown(){
   });
 }
 selectEl.addEventListener('change', ()=> render());
-
+ 
 // ---------- RENDER LOGIC (same as before) ----------
 function getLevel(pct, table){
   for(const row of table){
@@ -587,15 +587,15 @@ function getLevel(pct, table){
   }
   return table[table.length-1];
 }
-
+ 
 function render(){
   if(!DATA.length) return;
   const nombre = selectEl.value;
-
+ 
   // El panel de Tramos se muestra siempre, sea cual sea el filtro
   document.getElementById('tramosPanel').style.display = 'block';
   renderTramosTable(nombre);
-
+ 
   if(nombre === '__ALL__'){
     document.getElementById('allPanel').style.display = 'block';
     document.querySelectorAll('.single-view-panel').forEach(p=> p.style.display = 'none');
@@ -605,17 +605,17 @@ function render(){
     document.getElementById('allPanel').style.display = 'none';
     document.querySelectorAll('.single-view-panel').forEach(p=> p.style.display = 'block');
   }
-
+ 
   const c = DATA.find(x=>x.nombre===nombre) || DATA[0];
   if(!c) return;
-
+ 
   const perfil = c.perfil;
   const table = TABLES[perfil] || TABLES.BASE;
   const pctContiene = c.pctContieneRaw;
   const pctLibera = c.pctLiberaRaw;
   const pctTotal = pctContiene + pctLibera;
   const totalRecuperadoMonto = c.contiene + c.libera;
-
+ 
   // info general
   document.getElementById('infoNombre').textContent = c.nombre;
   document.getElementById('infoPerfil').innerHTML = `<span class="badge-perfil ${perfil}">${perfil}</span>`;
@@ -625,11 +625,11 @@ function render(){
   document.getElementById('infoLibera').textContent = fmtMoney(c.libera);
   document.getElementById('infoPctContiene').textContent = fmtPct(pctContiene);
   document.getElementById('infoPctLibera').textContent = fmtPct(pctLibera);
-
+ 
   // nivel lookup
   const nivelContiene = getLevel(pctContiene, table.contiene);
   const nivelMejora = getLevel(pctLibera, table.mejora);
-
+ 
   // KPI cards
   document.getElementById('kpiPerfil').textContent = perfil.charAt(0)+perfil.slice(1).toLowerCase();
   document.getElementById('kpiPerfilSub').textContent = table.bono>0 ? `Bono fijo $${table.bono}/mes` : 'Solo comisión';
@@ -638,7 +638,7 @@ function render(){
   document.getElementById('kpiPctContiene').textContent = fmtPct(pctContiene);
   document.getElementById('kpiPctLibera').textContent = fmtPct(pctLibera);
   document.getElementById('kpiPctTotal').textContent = fmtPct(pctTotal);
-
+ 
   // falta tables (Contiene / Mejora)
   const currentInicial = c.inicial;
   function buildFaltaRows(pct, table, bodyId){
@@ -666,11 +666,11 @@ function render(){
   }
   const faltasContiene = buildFaltaRows(pctContiene, table.contiene, 'faltaContieneBody');
   const faltasMejora = buildFaltaRows(pctLibera, table.mejora, 'faltaMejoraBody');
-
+ 
   document.getElementById('kpiFalta1').textContent = fmtPct(faltasContiene[0]);
   document.getElementById('kpiFalta2').textContent = fmtPct(faltasContiene[1]);
   document.getElementById('kpiFalta3').textContent = fmtPct(faltasContiene[2]);
-
+ 
   // gauges
   function renderGauge(pct, table, elId, labelId, pctId){
     const nivel = getLevel(pct, table);
@@ -684,7 +684,7 @@ function render(){
   }
   renderGauge(pctContiene, table.contiene, 'gaugeContiene', 'gaugeContieneLabel', 'gaugeContienePct');
   renderGauge(pctLibera, table.mejora, 'gaugeLibera', 'gaugeLiberaLabel', 'gaugeLiberaPct');
-
+ 
   const totalN1 = table.contiene[0].min + table.mejora[0].min;
   const totalWidth = Math.min(100, (pctTotal/totalN1)*100);
   const totalFill = document.getElementById('gaugeTotal');
@@ -692,10 +692,10 @@ function render(){
   totalFill.style.width = totalWidth.toFixed(1)+'%';
   document.getElementById('gaugeTotalLabel').textContent = totalWidth>15 ? fmtPct(pctTotal) : '';
   document.getElementById('gaugeTotalPct').textContent = fmtPct(pctTotal) + ' / meta N1 ' + fmtPct(totalN1);
-
+ 
   renderChart(pctContiene, pctLibera, table);
 }
-
+ 
 // ---------- EXPORT CONSOLIDADO (niveles y faltantes por cobrador) ----------
 function renderAllTable(){
   const body = document.getElementById('allTableBody');
@@ -707,7 +707,7 @@ function renderAllTable(){
     const infoMejora = nextLevelInfo(c.pctLiberaRaw, table.mejora, c.inicial);
     const pctTotal = c.pctContieneRaw + c.pctLiberaRaw;
     const faltaTotalMonto = infoContiene.faltaMonto + infoMejora.faltaMonto;
-
+ 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${c.nombre}</td>
@@ -725,28 +725,28 @@ function renderAllTable(){
     body.appendChild(tr);
   });
 }
-
+ 
 // ---------- TABLA DE RESULTADOS POR TRAMO (calculada desde el archivo, por cobrador o agregada) ----------
 function renderTramosTable(nombreFiltro){
   const body = document.getElementById('tramosTableBody');
   const titleEl = document.getElementById('tramosPanelTitle');
   body.innerHTML = '';
-
+ 
   // conjunto de cobradores a considerar: uno solo, o todos (agregado zona)
   const cobradoresIncluidos = (nombreFiltro && nombreFiltro !== '__ALL__')
     ? DATA.filter(c=>c.nombre===nombreFiltro)
     : DATA;
-
+ 
   if(titleEl){
     titleEl.textContent = (nombreFiltro && nombreFiltro !== '__ALL__')
       ? `Análisis por Tramos — ${nombreFiltro}`
       : 'Análisis por Tramos — Zona Milagro (todos los cobradores)';
   }
-
+ 
   // acumular saldo inicial / contiene / libera por tramo, sumando entre los cobradores incluidos
   const acc = {};
   TRAMO_CODES.forEach(t=> acc[t] = {inicial:0, contiene:0, libera:0, tieneData:false});
-
+ 
   cobradoresIncluidos.forEach(c=>{
     (c.tramos || []).forEach(t=>{
       if(!acc[t.tramo]) return;
@@ -756,14 +756,14 @@ function renderTramosTable(nombreFiltro){
       acc[t.tramo].tieneData = true;
     });
   });
-
+ 
   let accTotalInicial = 0, accTotalContiene = 0, accTotalLibera = 0, huboData = false;
-
+ 
   TRAMO_CODES.forEach(tramo=>{
     const a = acc[tramo];
     const meta = TRAMO_META[tramo];
     const tr = document.createElement('tr');
-
+ 
     if(!a.tieneData){
       tr.innerHTML = `
         <td>${tramo}</td>
@@ -775,17 +775,17 @@ function renderTramosTable(nombreFiltro){
       body.appendChild(tr);
       return;
     }
-
+ 
     const pctContiene = a.inicial>0 ? a.contiene/a.inicial : 0;
     const pctLibera = a.inicial>0 ? a.libera/a.inicial : 0;
     const pctTotal = pctContiene + pctLibera;
     const cumple = pctTotal >= meta;
-
+ 
     accTotalInicial += a.inicial;
     accTotalContiene += a.contiene;
     accTotalLibera += a.libera;
     huboData = true;
-
+ 
     tr.innerHTML = `
       <td>${tramo}</td>
       <td class="num">${fmtPct(pctContiene)}</td>
@@ -795,7 +795,7 @@ function renderTramosTable(nombreFiltro){
       <td><span class="tramo-status ${cumple?'cumple':'no-cumple'}">${cumple? '✓ Cumple' : '✗ No cumple'}</span></td>`;
     body.appendChild(tr);
   });
-
+ 
   // fila Total: meta ponderada por saldo inicial de cada tramo (igual método que la sistemática oficial)
   const trTotal = document.createElement('tr');
   trTotal.className = 'tramo-total';
@@ -821,7 +821,7 @@ function renderTramosTable(nombreFiltro){
   }
   body.appendChild(trTotal);
 }
-
+ 
 function nextLevelInfo(pct, table, inicial){
   const current = getLevel(pct, table);
   if(current.nivel === 1){
@@ -833,17 +833,17 @@ function nextLevelInfo(pct, table, inicial){
   const faltaMonto = faltaPct * inicial;
   return { nivelActual: current.nivel, siguienteNivel: targetNivel, metaSiguiente: targetRow.min, faltaPct, faltaMonto };
 }
-
+ 
 const downloadBtn = document.getElementById('downloadConsolidadoBtn');
 downloadBtn.addEventListener('click', ()=>{
   if(!DATA.length) return;
-
+ 
   const rows = DATA.map(c=>{
     const table = TABLES[c.perfil] || TABLES.BASE;
     const infoContiene = nextLevelInfo(c.pctContieneRaw, table.contiene, c.inicial);
     const infoMejora = nextLevelInfo(c.pctLiberaRaw, table.mejora, c.inicial);
     const pctTotal = c.pctContieneRaw + c.pctLiberaRaw;
-
+ 
     return {
       'Cobrador': c.nombre,
       'Perfil': c.perfil,
@@ -864,16 +864,16 @@ downloadBtn.addEventListener('click', ()=>{
       'Falta $ Total (Contiene + Mejora)': Number((infoContiene.faltaMonto + infoMejora.faltaMonto).toFixed(2)),
     };
   });
-
+ 
   const ws = XLSX.utils.json_to_sheet(rows);
   ws['!cols'] = Object.keys(rows[0]).map(k=>({ wch: Math.max(k.length, 14) }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Consolidado Niveles');
-
+ 
   const base = periodoLabel ? periodoLabel.replace(/[^a-zA-Z0-9_ ]/g,'').trim() : 'Cierre';
   XLSX.writeFile(wb, `Consolidado_Niveles_Faltantes_${base || 'Cierre'}.xlsx`);
 });
-
+ 
 let chart;
 function renderChart(pctContiene, pctLibera, table){
   const ctx = document.getElementById('chartComparativo');
@@ -898,3 +898,4 @@ function renderChart(pctContiene, pctLibera, table){
 </script>
 </body>
 </html>
+ 
